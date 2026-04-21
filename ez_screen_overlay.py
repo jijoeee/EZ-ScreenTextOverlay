@@ -107,28 +107,40 @@ class PresetManager:
 # ==========================================
 # FLOATING MINI TOOLBAR (WITH EDGE SNAP)
 # ==========================================
+# ==========================================
+# FLOATING MINI TOOLBAR (WITH EDGE SNAP)
+# ==========================================
 class MiniToolbar:
     def __init__(self, main_app):
         self.main_app = main_app
         self.window = tk.Toplevel(main_app.root)
-        self.window.geometry("320x80")
         self.window.overrideredirect(True) # Removes OS borders
         self.window.attributes("-topmost", True)
         self.window.configure(bg="#1e1e1e")
         
-        # Center the toolbar on launch
-        sw = self.window.winfo_screenwidth()
-        self.window.geometry(f"+{sw//2 - 160}+50")
-
         self._offsetx = 0
         self._offsety = 0
-        
-        # Auto-hide states
         self.snapped_edge = None
         self.is_hidden = False
 
         self.build_ui()
         self.update_display()
+
+        # --- DYNAMIC AUTO-SIZING (DPI FIX) ---
+        # 1. Ask the OS to calculate the exact pixels needed for the widgets at current scaling
+        self.window.update_idletasks()
+        
+        # 2. Grab the calculated dimensions and add a tiny bit of breathing room
+        req_w = self.window.winfo_reqwidth() + 15
+        req_h = self.window.winfo_reqheight() + 10
+        
+        # 3. Calculate perfect center based on the dynamic width
+        sw = self.window.winfo_screenwidth()
+        start_x = (sw // 2) - (req_w // 2)
+        start_y = 50
+
+        # 4. Lock in the calculated size and position
+        self.window.geometry(f"{req_w}x{req_h}+{start_x}+{start_y}")
 
     def build_ui(self):
         # 1. Custom Title Bar (Draggable)
@@ -140,7 +152,7 @@ class MiniToolbar:
         title_bar.bind("<B1-Motion>", self.drag_window)
         title_bar.bind("<ButtonRelease-1>", self.on_drag_release)
 
-        # Drag Hint (Text updated)
+        # Drag Hint
         drag_lbl = ctk.CTkLabel(title_bar, text="⠿ EZ Toolbar", font=ctk.CTkFont(size=12, weight="bold"), text_color="#aaaaaa")
         drag_lbl.pack(side=tk.LEFT, padx=10)
         drag_lbl.bind("<Button-1>", self.click_window)
@@ -156,11 +168,11 @@ class MiniToolbar:
 
         # 2. Status / Preset Name Display
         self.lbl_preset = ctk.CTkLabel(self.window, text="No Preset Loaded", font=ctk.CTkFont(size=13, weight="bold"), text_color="#00d4aa")
-        self.lbl_preset.pack(fill=tk.X, pady=(2, 2))
+        self.lbl_preset.pack(fill=tk.X, pady=(4, 2))
 
-        # 3. Action Buttons
+        # 3. Action Buttons (Added slightly more bottom padding)
         btn_frame = ctk.CTkFrame(self.window, fg_color="transparent")
-        btn_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=(0, 5))
+        btn_frame.pack(fill=tk.BOTH, expand=True, padx=8, pady=(0, 10)) 
 
         b_kw = {"height": 24, "font": ctk.CTkFont(size=11, weight="bold")}
         
@@ -185,7 +197,7 @@ class MiniToolbar:
 
     # --- Window Drag & Snapping Mechanics ---
     def click_window(self, event):
-        self.snapped_edge = None # Unsnap when clicked
+        self.snapped_edge = None
         self._offsetx = event.x
         self._offsety = event.y
 
@@ -197,7 +209,7 @@ class MiniToolbar:
     def on_drag_release(self, event):
         y = self.window.winfo_y()
         sh = self.window.winfo_screenheight()
-        threshold = 30 # Trigger snapping if released within 30px of top or bottom
+        threshold = 30 
         
         was_snapped = self.snapped_edge is not None
 
@@ -226,7 +238,6 @@ class MiniToolbar:
         ww = self.window.winfo_width()
         wh = self.window.winfo_height()
 
-        # Is the mouse cursor over the toolbar?
         is_hovering = (wx <= px <= wx + ww) and (wy <= py <= wy + wh)
 
         if is_hovering and self.is_hidden:
@@ -234,7 +245,6 @@ class MiniToolbar:
         elif not is_hovering and not self.is_hidden:
             self.snap_hide()
 
-        # Poll again in 100ms
         self.window.after(100, self._check_snap_hover)
 
     def snap_hide(self):
@@ -242,7 +252,7 @@ class MiniToolbar:
         wx = self.window.winfo_x()
         wh = self.window.winfo_height()
         sh = self.window.winfo_screenheight()
-        leave_pixels = 8 # Leave a tiny 8px bar to hover over
+        leave_pixels = 8 
         
         if self.snapped_edge == 'top':
             self.window.geometry(f"+{wx}+{-wh + leave_pixels}")
