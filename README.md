@@ -1,4 +1,4 @@
-# 🖥️ EZ Screen Overlay Tool v1.0
+# 🖥️ EZ Screen Overlay Tool (v1.0)
 
 ![Version](https://img.shields.io/badge/version-1.0-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.8%2B-green.svg)
@@ -6,9 +6,11 @@
 
 **EZ Screen Overlay Tool** is a lightweight, always-on-top utility designed for someone that seeks for simple text overlay editing. It allows you to display customizable, transparent text on your screen while recording or presenting—completely eliminating the need to edit text into your videos in post-production.
 
-<img width="947" height="533" alt="image" src="https://github.com/user-attachments/assets/5617a465-f3b8-426c-963f-d4cbc280863d" />
+<img width="1876" height="1043" alt="image" src="https://github.com/user-attachments/assets/8b0cce20-bae8-422a-a1ef-e861f55ec0c3" />
 
-<img width="316" height="79" alt="image" src="https://github.com/user-attachments/assets/3259a500-cdb5-4a92-96fc-378c37377bc3" />
+
+<img width="598" height="191" alt="image" src="https://github.com/user-attachments/assets/6b46c29b-5adf-4596-b156-70e69999915d" />
+
 
 
 ## ✨ Why Use This Tool?
