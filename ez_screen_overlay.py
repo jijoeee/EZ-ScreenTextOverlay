@@ -150,14 +150,12 @@ class MiniToolbar:
 
         title_bar.bind("<Button-1>", self.click_window)
         title_bar.bind("<B1-Motion>", self.drag_window)
-        title_bar.bind("<ButtonRelease-1>", self.on_drag_release)
 
         # Drag Hint
         drag_lbl = ctk.CTkLabel(title_bar, text="⠿ EZ Toolbar", font=ctk.CTkFont(size=12, weight="bold"), text_color="#aaaaaa")
         drag_lbl.pack(side=tk.LEFT, padx=10)
         drag_lbl.bind("<Button-1>", self.click_window)
         drag_lbl.bind("<B1-Motion>", self.drag_window)
-        drag_lbl.bind("<ButtonRelease-1>", self.on_drag_release)
 
         # Window Controls
         btn_close = ctk.CTkButton(title_bar, text="✕", width=30, height=20, fg_color="transparent", hover_color="#c22929", command=self.close_toolbar)
@@ -195,80 +193,26 @@ class MiniToolbar:
         else:
             self.lbl_preset.configure(text="No Preset Selected")
 
-    # --- Window Drag & Snapping Mechanics ---
     def click_window(self, event):
-        self.snapped_edge = None
-        self._offsetx = event.x
-        self._offsety = event.y
+        # Record the exact screen coordinates of the mouse click
+        self._start_x = event.x_root
+        self._start_y = event.y_root
+        
+        # Record the exact starting position of the window
+        self._window_start_x = self.window.winfo_x()
+        self._window_start_y = self.window.winfo_y()
 
     def drag_window(self, event):
-        x = self.window.winfo_pointerx() - self._offsetx
-        y = self.window.winfo_pointery() - self._offsety
+        # Calculate how far the mouse has moved since the click
+        delta_x = event.x_root - self._start_x
+        delta_y = event.y_root - self._start_y
+        
+        # Apply that movement to the window's starting position
+        x = self._window_start_x + delta_x
+        y = self._window_start_y + delta_y
+        
         self.window.geometry(f"+{x}+{y}")
 
-    def on_drag_release(self, event):
-        y = self.window.winfo_y()
-        sh = self.window.winfo_screenheight()
-        threshold = 30 
-        
-        was_snapped = self.snapped_edge is not None
-
-        if y <= threshold:
-            self.snapped_edge = 'top'
-            self.is_hidden = False
-            if not was_snapped:
-                self._check_snap_hover()
-        elif y + self.window.winfo_height() >= sh - threshold:
-            self.snapped_edge = 'bottom'
-            self.is_hidden = False
-            if not was_snapped:
-                self._check_snap_hover()
-        else:
-            self.snapped_edge = None
-            self.is_hidden = False
-
-    def _check_snap_hover(self):
-        if not self.snapped_edge:
-            return
-
-        px = self.window.winfo_pointerx()
-        py = self.window.winfo_pointery()
-        wx = self.window.winfo_rootx()
-        wy = self.window.winfo_rooty()
-        ww = self.window.winfo_width()
-        wh = self.window.winfo_height()
-
-        is_hovering = (wx <= px <= wx + ww) and (wy <= py <= wy + wh)
-
-        if is_hovering and self.is_hidden:
-            self.snap_show()
-        elif not is_hovering and not self.is_hidden:
-            self.snap_hide()
-
-        self.window.after(100, self._check_snap_hover)
-
-    def snap_hide(self):
-        self.is_hidden = True
-        wx = self.window.winfo_x()
-        wh = self.window.winfo_height()
-        sh = self.window.winfo_screenheight()
-        leave_pixels = 8 
-        
-        if self.snapped_edge == 'top':
-            self.window.geometry(f"+{wx}+{-wh + leave_pixels}")
-        elif self.snapped_edge == 'bottom':
-            self.window.geometry(f"+{wx}+{sh - leave_pixels}")
-
-    def snap_show(self):
-        self.is_hidden = False
-        wx = self.window.winfo_x()
-        wh = self.window.winfo_height()
-        sh = self.window.winfo_screenheight()
-        
-        if self.snapped_edge == 'top':
-            self.window.geometry(f"+{wx}+0")
-        elif self.snapped_edge == 'bottom':
-            self.window.geometry(f"+{wx}+{sh - wh}")
 
     def minimize_toolbar(self):
         self.window.withdraw()
